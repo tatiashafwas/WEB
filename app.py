@@ -11,8 +11,8 @@ def get_image_base64(image_path):
         return None
 
 # Path ke file logo (ganti sesuai lokasi file Anda)
-logo_uptd_path = r"WEB/City_of_Surabaya_Logo.png"
-logo_dinas_path = r"WEB/LOGO-METRO.png"
+logo_uptd_path = r"City_of_Surabaya_Logo.png"
+logo_dinas_path = r"LOGO-METRO.png"
 
 # Cek keberadaan file logo dan konversi ke Base64
 logo_uptd_base64 = get_image_base64(logo_uptd_path)
