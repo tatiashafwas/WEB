@@ -2,6 +2,7 @@ import streamlit as st
 import base64
 from datetime import date
 import pandas as pd
+import os  # <-- Add this import
 
 # Fungsi untuk mengonversi gambar ke Base64
 def get_image_base64(image_path):
