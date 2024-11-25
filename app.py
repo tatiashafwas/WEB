@@ -79,6 +79,9 @@ pilihan = st.sidebar.selectbox("Pilih Menu", menu)
 if pilihan == "Tambah Data":
     st.subheader("Tambah Data Baru")
     with st.form("form_tambah_data"):
+        # Input untuk tanggal terlebih dahulu
+        tanggal_tera = st.date_input("Tanggal Tera", min_value=date(2020, 1, 1), max_value=date.today())
+
         # Input untuk nama perusahaan dan alamat
         nama_perusahaan = st.text_input("Nama Perusahaan")
         alamat = st.text_input("Alamat")
@@ -93,13 +96,10 @@ if pilihan == "Tambah Data":
             jenis_uttp = st.text_input(f"Jenis UTTP {i}")
             jenis_uttp_inputs.append(jenis_uttp)
 
-        # Input untuk jenis tera, kegiatan, status, dan tanggal
+        # Input untuk jenis tera, kegiatan, status
         jenis_tera = st.selectbox("Jenis Tera", ["Tera", "Tera Ulang"])
         kegiatan = st.selectbox("Kegiatan", ["Sidang Kantor", "Sidang Pasar", "Loko UAPV", "Loko MT"])
         status = st.selectbox("Status", ["Sah", "Batal"])
-
-        # Input tanggal
-        tanggal_tera = st.date_input("Tanggal Tera", min_value=date(2020, 1, 1), max_value=date.today())
 
         # Tombol simpan
         submit = st.form_submit_button("Simpan Data")
