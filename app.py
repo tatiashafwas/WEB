@@ -1,6 +1,7 @@
 import streamlit as st
 import base64
 from datetime import date
+import pandas as pd
 
 # Fungsi untuk mengonversi gambar ke Base64
 def get_image_base64(image_path):
@@ -107,13 +108,40 @@ if pilihan == "Tambah Data":
         if submit:
             # Validasi untuk memastikan semua input diisi
             if nama_perusahaan and alamat and all(jenis_uttp_inputs):
+                # Membuat DataFrame untuk menyimpan data
+                data = {
+                    "Tanggal Tera": [tanggal_tera],
+                    "Nama Perusahaan": [nama_perusahaan],
+                    "Alamat": [alamat],
+                    "Jenis UTTP": [', '.join(jenis_uttp_inputs)],
+                    "Jenis Tera": [jenis_tera],
+                    "Kegiatan": [kegiatan],
+                    "Status": [status]
+                }
+
+                df = pd.DataFrame(data)
+
+                # Simpan data ke CSV
+                file_path = "data_tera.csv"
+                if os.path.exists(file_path):
+                    df.to_csv(file_path, mode='a', header=False, index=False)
+                else:
+                    df.to_csv(file_path, mode='w', header=True, index=False)
+
                 st.success(f"Data berhasil disimpan! Jenis UTTP yang diinput: {jenis_uttp_inputs} pada tanggal {tanggal_tera}")
             else:
                 st.error("Harap isi semua kolom, termasuk semua Jenis UTTP!")
 
 elif pilihan == "Lihat Data":
     st.subheader("Data Tera/Tera Ulang")
-    st.write("Tampilkan data di sini.")
+
+    # Menampilkan data dari file CSV
+    file_path = "data_tera.csv"
+    if os.path.exists(file_path):
+        df = pd.read_csv(file_path)
+        st.write(df)
+    else:
+        st.write("Data tidak ditemukan.")
 
 elif pilihan == "Tentang":
     st.subheader("Tentang Aplikasi")
