@@ -73,6 +73,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# Definisi path untuk file CSV
+data_file_path = "data_tera_ulang.csv"  # Definisikan path file data
+
 # Menu aplikasi di sidebar
 menu = ["Tambah Data", "Lihat Data", "Tentang"]
 pilihan = st.sidebar.selectbox("Pilih Menu", menu)
@@ -152,7 +155,6 @@ if pilihan == "Tambah Data":
 
 elif pilihan == "Lihat Data":
     st.subheader("Data Tera/Tera Ulang")
-    data_file_path = "data_tera_ulang.csv"  # Definisikan path file data
     if os.path.exists(data_file_path):
         data = pd.read_csv(data_file_path)  # Load data
         st.dataframe(data)  # Tampilkan data dalam bentuk DataFrame
