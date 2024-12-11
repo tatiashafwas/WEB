@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import base64
 from datetime import date
+import pandas as pd  # Library untuk manipulasi data
 
 # Fungsi untuk mengonversi gambar ke Base64
 def get_image_base64(image_path):
@@ -126,7 +127,13 @@ if pilihan == "Tambah Data":
 
 elif pilihan == "Lihat Data":
     st.subheader("Data Tera/Tera Ulang")
-    st.write("Tampilkan data di sini.")
+    # Cek apakah data CSV atau file lainnya ada
+    data_file_path = "data_tera_ulang.csv"  # Path ke file data CSV
+    if os.path.exists(data_file_path):
+        data = pd.read_csv(data_file_path)  # Load data
+        st.dataframe(data)  # Tampilkan data dalam bentuk DataFrame
+    else:
+        st.error("File data tidak ditemukan!")
 
 elif pilihan == "Tentang":
     st.subheader("Tentang Aplikasi")
