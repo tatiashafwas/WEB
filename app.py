@@ -122,6 +122,24 @@ if pilihan == "Tambah Data":
                 for i, jenis in enumerate(jenis_uttp_inputs):
                     if jenis:  # Hanya tampilkan jika ada isi
                         st.write(f"Jenis UTTP {i+1}: {jenis}, Jumlah UTTP: {jumlah_unit_inputs[i]}")
+                
+                # Simpan data ke file CSV
+                data = {
+                    'Tanggal': [tanggal],
+                    'Nama Perusahaan': [nama_perusahaan],
+                    'Alamat': [alamat],
+                    'Jenis Tera': [jenis_tera],
+                    'Kegiatan': [kegiatan],
+                    'Status': [status]
+                }
+                for i, jenis in enumerate(jenis_uttp_inputs):
+                    if jenis:
+                        data[f"Jenis UTTP {i+1}"] = [jenis]
+                        data[f"Jumlah UTTP {i+1}"] = [jumlah_unit_inputs[i]]
+                
+                df = pd.DataFrame(data)
+                df.to_csv(data_file_path, mode='a', index=False, header=False)
+
             else:
                 st.error("Harap isi semua kolom wajib (Nama Perusahaan dan Alamat)!")
 
