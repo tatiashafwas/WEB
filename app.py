@@ -138,14 +138,20 @@ if pilihan == "Tambah Data":
                         data[f"Jumlah UTTP {i+1}"] = [jumlah_unit_inputs[i]]
                 
                 df = pd.DataFrame(data)
-                df.to_csv(data_file_path, mode='a', index=False, header=False)  # mode='a' untuk append data
+                try:
+                    if not os.path.exists(data_file_path):
+                        # Jika file tidak ditemukan, buat file baru dengan header
+                        with open(data_file_path, 'w') as f:
+                            f.write('Tanggal,Nama Perusahaan,Alamat,Jenis Tera,Kegiatan,Status\n')
+                    df.to_csv(data_file_path, mode='a', index=False, header=False)  # mode='a' untuk append
+                except Exception as e:
+                    st.error(f"Terjadi kesalahan saat menulis ke file CSV: {e}")
 
             else:
                 st.error("Harap isi semua kolom wajib (Nama Perusahaan dan Alamat)!")
 
 elif pilihan == "Lihat Data":
     st.subheader("Data Tera/Tera Ulang")
-    # Cek apakah data CSV atau file lainnya ada
     data_file_path = "data_tera_ulang.csv"  # Definisikan path file data
     if os.path.exists(data_file_path):
         data = pd.read_csv(data_file_path)  # Load data
