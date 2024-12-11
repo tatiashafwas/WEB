@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
-import os
 import base64
+from datetime import datetime
 
 # Fungsi untuk mengonversi gambar ke Base64
 def get_image_base64(image_path):
@@ -18,6 +18,12 @@ logo_dinas_path = r"LOGO-METRO.png"
 # Cek keberadaan file logo dan konversi ke Base64
 logo_uptd_base64 = get_image_base64(logo_uptd_path)
 logo_dinas_base64 = get_image_base64(logo_dinas_path)
+
+# Inisialisasi session state untuk data
+if "data_tera" not in st.session_state:
+    st.session_state["data_tera"] = pd.DataFrame(columns=[
+        "Tanggal", "Nama Perusahaan", "Alamat", "Jenis UTTP", "Jumlah", "Jenis Tera", "Kegiatan", "Status"
+    ])
 
 # Menampilkan header jika logo ditemukan
 if logo_uptd_base64 and logo_dinas_base64:
@@ -72,12 +78,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Simpan data di session state
-if "data_tera" not in st.session_state:
-    st.session_state["data_tera"] = pd.DataFrame(
-        columns=["Nama Perusahaan", "Alamat", "Jenis UTTP", "Jumlah UTTP", "Jenis Tera", "Kegiatan", "Status"]
-    )
-
 # Menu aplikasi di sidebar
 menu = ["Tambah Data", "Lihat Data", "Tentang"]
 pilihan = st.sidebar.selectbox("Pilih Menu", menu)
@@ -92,8 +92,8 @@ if pilihan == "Tambah Data":
 
         # Input untuk jumlah jenis UTTP
         st.markdown("### Jenis UTTP")
-        jumlah_jenis_uttp = st.number_input("Jumlah Jenis UTTP", min_value=1, max_value=50, value=8)
-
+        jumlah_jenis_uttp = st.number_input("Jumlah Jenis UTTP", min_value=1, max_value=50, value=1)
+        
         # Dinamis: Membuat input teks sesuai jumlah UTTP
         jenis_uttp_inputs = []
         jumlah_unit_inputs = []
@@ -117,29 +117,31 @@ if pilihan == "Tambah Data":
         if submit:
             # Validasi untuk memastikan semua input diisi
             if nama_perusahaan and alamat and all(jenis_uttp_inputs):
-                # Simpan setiap UTTP sebagai baris baru
-                for i, jenis in enumerate(jenis_uttp_inputs):
-                    new_row = {
-                        "Nama Perusahaan": nama_perusahaan,
-                        "Alamat": alamat,
-                        "Jenis UTTP": jenis,
-                        "Jumlah UTTP": jumlah_unit_inputs[i],
-                        "Jenis Tera": jenis_tera,
-                        "Kegiatan": kegiatan,
-                        "Status": status,
-                    }
-                    st.session_state["data_tera"] = st.session_state["data_tera"].append(new_row, ignore_index=True)
-                st.success(f"Data berhasil disimpan!")
+                # Data baru yang akan ditambahkan
+                new_row = {
+                    "Tanggal": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "Nama Perusahaan": nama_perusahaan,
+                    "Alamat": alamat,
+                    "Jenis UTTP": "; ".join(jenis_uttp_inputs),
+                    "Jumlah": "; ".join(map(str, jumlah_unit_inputs)),
+                    "Jenis Tera": jenis_tera,
+                    "Kegiatan": kegiatan,
+                    "Status": status,
+                }
+
+                # Menambahkan data ke session_state
+                st.session_state["data_tera"] = pd.concat([
+                    st.session_state["data_tera"],
+                    pd.DataFrame([new_row])
+                ], ignore_index=True)
+
+                st.success("Data berhasil disimpan!")
             else:
-                st.error("Harap isi semua kolom, termasuk semua Jenis UTTP dan jumlah unitnya!")
+                st.error("Harap isi semua kolom dengan lengkap!")
 
 elif pilihan == "Lihat Data":
     st.subheader("Data Tera/Tera Ulang")
-    # Menampilkan data jika ada
-    if not st.session_state["data_tera"].empty:
-        st.dataframe(st.session_state["data_tera"])
-    else:
-        st.write("Belum ada data yang disimpan.")
+    st.write(st.session_state["data_tera"])
 
 elif pilihan == "Tentang":
     st.subheader("Tentang Aplikasi")
