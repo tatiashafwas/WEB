@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 import os
 import base64
 
@@ -71,6 +72,12 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# Simpan data di session state
+if "data_tera" not in st.session_state:
+    st.session_state["data_tera"] = pd.DataFrame(
+        columns=["Nama Perusahaan", "Alamat", "Jenis UTTP", "Jumlah UTTP", "Jenis Tera", "Kegiatan", "Status"]
+    )
+
 # Menu aplikasi di sidebar
 menu = ["Tambah Data", "Lihat Data", "Tentang"]
 pilihan = st.sidebar.selectbox("Pilih Menu", menu)
@@ -86,7 +93,7 @@ if pilihan == "Tambah Data":
         # Input untuk jumlah jenis UTTP
         st.markdown("### Jenis UTTP")
         jumlah_jenis_uttp = st.number_input("Jumlah Jenis UTTP", min_value=1, max_value=50, value=8)
-        
+
         # Dinamis: Membuat input teks sesuai jumlah UTTP
         jenis_uttp_inputs = []
         jumlah_unit_inputs = []
@@ -110,15 +117,29 @@ if pilihan == "Tambah Data":
         if submit:
             # Validasi untuk memastikan semua input diisi
             if nama_perusahaan and alamat and all(jenis_uttp_inputs):
-                st.success(f"Data berhasil disimpan!")
+                # Simpan setiap UTTP sebagai baris baru
                 for i, jenis in enumerate(jenis_uttp_inputs):
-                    st.write(f"Jenis UTTP {i+1}: {jenis}, Jumlah UTTP: {jumlah_unit_inputs[i]}")
+                    new_row = {
+                        "Nama Perusahaan": nama_perusahaan,
+                        "Alamat": alamat,
+                        "Jenis UTTP": jenis,
+                        "Jumlah UTTP": jumlah_unit_inputs[i],
+                        "Jenis Tera": jenis_tera,
+                        "Kegiatan": kegiatan,
+                        "Status": status,
+                    }
+                    st.session_state["data_tera"] = st.session_state["data_tera"].append(new_row, ignore_index=True)
+                st.success(f"Data berhasil disimpan!")
             else:
                 st.error("Harap isi semua kolom, termasuk semua Jenis UTTP dan jumlah unitnya!")
 
 elif pilihan == "Lihat Data":
     st.subheader("Data Tera/Tera Ulang")
-    st.write("Tampilkan data di sini.")
+    # Menampilkan data jika ada
+    if not st.session_state["data_tera"].empty:
+        st.dataframe(st.session_state["data_tera"])
+    else:
+        st.write("Belum ada data yang disimpan.")
 
 elif pilihan == "Tentang":
     st.subheader("Tentang Aplikasi")
