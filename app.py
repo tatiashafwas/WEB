@@ -30,11 +30,11 @@ if logo_uptd_base64 and logo_dinas_base64:
             justify-content: center;
             align-items: center;
             padding: 10px 20px;
-            background-color: #222; /* Background warna gelap */
+            background-color: #222;
             gap: 10px;
         }}
         .logo {{
-            height: 80px; /* Ukuran tinggi logo */
+            height: 80px;
         }}
         .text {{
             text-align: center;
@@ -85,6 +85,22 @@ if pilihan == "Tambah Data":
         tanggal = st.date_input("Tanggal", value=date.today())
         nama_perusahaan = st.text_input("Nama Perusahaan")
         alamat = st.text_input("Alamat")
+
+        # Input untuk jenis UTTP (minimal 8, opsional diisi)
+        st.markdown("### Jenis UTTP")
+        jumlah_jenis_uttp = st.number_input("Jumlah Jenis UTTP", min_value=8, max_value=50, value=8)
+
+        jenis_uttp_inputs = []
+        jumlah_unit_inputs = []
+        for i in range(1, int(jumlah_jenis_uttp) + 1):
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                jenis_uttp = st.text_input(f"Jenis UTTP {i}", placeholder="Opsional")
+            with col2:
+                jumlah_unit = st.number_input(f"Jumlah UTTP {i}", min_value=0, value=0)
+            jenis_uttp_inputs.append(jenis_uttp)
+            jumlah_unit_inputs.append(jumlah_unit)
+
         jenis_tera = st.selectbox("Jenis Tera", ["Tera", "Tera Ulang"])
         kegiatan = st.selectbox("Kegiatan", ["Sidang Kantor", "Sidang Pasar", "Loko UAPV", "Loko MT"])
         status = st.selectbox("Status", ["Sah", "Batal"])
@@ -93,6 +109,8 @@ if pilihan == "Tambah Data":
         if submit:
             if nama_perusahaan and alamat:
                 st.success("Data berhasil disimpan!")
+
+                # Siapkan data untuk disimpan
                 data = {
                     "Tanggal": [tanggal],
                     "Nama Perusahaan": [nama_perusahaan],
@@ -101,6 +119,12 @@ if pilihan == "Tambah Data":
                     "Kegiatan": [kegiatan],
                     "Status": [status],
                 }
+
+                for i, jenis in enumerate(jenis_uttp_inputs):
+                    if jenis:  # Hanya simpan jika jenis diisi
+                        data[f"Jenis UTTP {i+1}"] = [jenis]
+                        data[f"Jumlah UTTP {i+1}"] = [jumlah_unit_inputs[i]]
+
                 df = pd.DataFrame(data)
                 if not os.path.exists(data_file_path):
                     df.to_csv(data_file_path, index=False)
@@ -113,27 +137,6 @@ elif pilihan == "Lihat Data":
     st.subheader("Data Tera/Tera Ulang")
     if os.path.exists(data_file_path):
         data = pd.read_csv(data_file_path)
-        # Tampilkan tabel dengan CSS tambahan
-        st.markdown(
-            """
-            <style>
-            .dataframe table {
-                width: 100%;
-                border-collapse: collapse;
-            }
-            .dataframe th {
-                background-color: #f2f2f2;
-                text-align: center;
-                padding: 10px;
-            }
-            .dataframe td {
-                text-align: left;
-                padding: 8px;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
         st.dataframe(data, use_container_width=True)
     else:
         st.error("Data belum tersedia!")
