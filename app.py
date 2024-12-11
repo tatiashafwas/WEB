@@ -1,8 +1,6 @@
 import streamlit as st
+import os
 import base64
-from datetime import date
-import pandas as pd
-import os  # <-- Add this import
 
 # Fungsi untuk mengonversi gambar ke Base64
 def get_image_base64(image_path):
@@ -13,8 +11,8 @@ def get_image_base64(image_path):
         return None
 
 # Path ke file logo (ganti sesuai lokasi file Anda)
-logo_uptd_path = r"City_of_Surabaya_Logo.png"
-logo_dinas_path = r"LOGO-METRO.png"
+logo_uptd_path = r"C:\Users\tatia shafwa s\OneDrive\Documents\Tera Ulang\City_of_Surabaya_Logo.png"
+logo_dinas_path = r"C:\Users\tatia shafwa s\OneDrive\Documents\Tera Ulang\LOGO-METRO.png"
 
 # Cek keberadaan file logo dan konversi ke Base64
 logo_uptd_base64 = get_image_base64(logo_uptd_path)
@@ -81,9 +79,6 @@ pilihan = st.sidebar.selectbox("Pilih Menu", menu)
 if pilihan == "Tambah Data":
     st.subheader("Tambah Data Baru")
     with st.form("form_tambah_data"):
-        # Input untuk tanggal terlebih dahulu
-        tanggal_tera = st.date_input("Tanggal Tera", min_value=date(2020, 1, 1), max_value=date.today())
-
         # Input untuk nama perusahaan dan alamat
         nama_perusahaan = st.text_input("Nama Perusahaan")
         alamat = st.text_input("Alamat")
@@ -94,11 +89,17 @@ if pilihan == "Tambah Data":
         
         # Dinamis: Membuat input teks sesuai jumlah UTTP
         jenis_uttp_inputs = []
+        jumlah_unit_inputs = []
         for i in range(1, int(jumlah_jenis_uttp) + 1):
-            jenis_uttp = st.text_input(f"Jenis UTTP {i}")
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                jenis_uttp = st.text_input(f"Jenis UTTP {i}")
+            with col2:
+                jumlah_unit = st.number_input(f"Jumlah UTTP {i}", min_value=0, value=0)
             jenis_uttp_inputs.append(jenis_uttp)
+            jumlah_unit_inputs.append(jumlah_unit)
 
-        # Input untuk jenis tera, kegiatan, status
+        # Input untuk jenis tera, kegiatan, dan status
         jenis_tera = st.selectbox("Jenis Tera", ["Tera", "Tera Ulang"])
         kegiatan = st.selectbox("Kegiatan", ["Sidang Kantor", "Sidang Pasar", "Loko UAPV", "Loko MT"])
         status = st.selectbox("Status", ["Sah", "Batal"])
@@ -109,40 +110,15 @@ if pilihan == "Tambah Data":
         if submit:
             # Validasi untuk memastikan semua input diisi
             if nama_perusahaan and alamat and all(jenis_uttp_inputs):
-                # Membuat DataFrame untuk menyimpan data
-                data = {
-                    "Tanggal Tera": [tanggal_tera],
-                    "Nama Perusahaan": [nama_perusahaan],
-                    "Alamat": [alamat],
-                    "Jenis UTTP": [', '.join(jenis_uttp_inputs)],
-                    "Jenis Tera": [jenis_tera],
-                    "Kegiatan": [kegiatan],
-                    "Status": [status]
-                }
-
-                df = pd.DataFrame(data)
-
-                # Simpan data ke CSV
-                file_path = "data_tera.csv"
-                if os.path.exists(file_path):
-                    df.to_csv(file_path, mode='a', header=False, index=False)
-                else:
-                    df.to_csv(file_path, mode='w', header=True, index=False)
-
-                st.success(f"Data berhasil disimpan! Jenis UTTP yang diinput: {jenis_uttp_inputs} pada tanggal {tanggal_tera}")
+                st.success(f"Data berhasil disimpan!")
+                for i, jenis in enumerate(jenis_uttp_inputs):
+                    st.write(f"Jenis UTTP {i+1}: {jenis}, Jumlah UTTP: {jumlah_unit_inputs[i]}")
             else:
-                st.error("Harap isi semua kolom, termasuk semua Jenis UTTP!")
+                st.error("Harap isi semua kolom, termasuk semua Jenis UTTP dan jumlah unitnya!")
 
 elif pilihan == "Lihat Data":
     st.subheader("Data Tera/Tera Ulang")
-
-    # Menampilkan data dari file CSV
-    file_path = "data_tera.csv"
-    if os.path.exists(file_path):
-        df = pd.read_csv(file_path)
-        st.write(df)
-    else:
-        st.write("Data tidak ditemukan.")
+    st.write("Tampilkan data di sini.")
 
 elif pilihan == "Tentang":
     st.subheader("Tentang Aplikasi")
