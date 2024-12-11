@@ -2,7 +2,7 @@ import streamlit as st
 import os
 import base64
 from datetime import date
-import pandas as pd  # Library untuk manipulasi data
+import pandas as pd
 
 # Fungsi untuk mengonversi gambar ke Base64
 def get_image_base64(image_path):
@@ -56,7 +56,6 @@ if logo_uptd_base64 and logo_dinas_base64:
         unsafe_allow_html=True,
     )
 else:
-    # Menampilkan error jika logo tidak ditemukan
     if not logo_uptd_base64:
         st.error(f"Logo UPTD tidak ditemukan di path: {logo_uptd_path}")
     if not logo_dinas_base64:
@@ -74,92 +73,70 @@ st.markdown(
 )
 
 # Definisi path untuk file CSV
-data_file_path = "data_tera_ulang.csv"  # Definisikan path file data
+data_file_path = "data_tera_ulang.csv"
 
 # Menu aplikasi di sidebar
 menu = ["Tambah Data", "Lihat Data", "Tentang"]
 pilihan = st.sidebar.selectbox("Pilih Menu", menu)
 
-# Fungsi utama berdasarkan menu yang dipilih
 if pilihan == "Tambah Data":
     st.subheader("Tambah Data Baru")
     with st.form("form_tambah_data"):
-        # Input untuk tanggal
         tanggal = st.date_input("Tanggal", value=date.today())
-
-        # Input untuk nama perusahaan dan alamat
         nama_perusahaan = st.text_input("Nama Perusahaan")
         alamat = st.text_input("Alamat")
-
-        # Input untuk jumlah jenis UTTP
-        st.markdown("### Jenis UTTP")
-        jumlah_jenis_uttp = st.number_input("Jumlah Jenis UTTP", min_value=8, max_value=50, value=8)
-
-        # Dinamis: Membuat input teks sesuai jumlah UTTP
-        jenis_uttp_inputs = []
-        jumlah_unit_inputs = []
-        for i in range(1, int(jumlah_jenis_uttp) + 1):
-            col1, col2 = st.columns([2, 1])
-            with col1:
-                jenis_uttp = st.text_input(f"Jenis UTTP {i}", placeholder="Opsional")
-            with col2:
-                jumlah_unit = st.number_input(f"Jumlah UTTP {i}", min_value=0, value=0)
-            jenis_uttp_inputs.append(jenis_uttp)
-            jumlah_unit_inputs.append(jumlah_unit)
-
-        # Input untuk jenis tera, kegiatan, dan status
         jenis_tera = st.selectbox("Jenis Tera", ["Tera", "Tera Ulang"])
         kegiatan = st.selectbox("Kegiatan", ["Sidang Kantor", "Sidang Pasar", "Loko UAPV", "Loko MT"])
         status = st.selectbox("Status", ["Sah", "Batal"])
-
-        # Tombol simpan
         submit = st.form_submit_button("Simpan Data")
 
         if submit:
-            # Validasi untuk memastikan semua input diisi kecuali UTTP opsional
             if nama_perusahaan and alamat:
-                st.success(f"Data berhasil disimpan untuk tanggal {tanggal}!")
-                st.write(f"Nama Perusahaan: {nama_perusahaan}")
-                st.write(f"Alamat: {alamat}")
-                st.write(f"Jenis Tera: {jenis_tera}, Kegiatan: {kegiatan}, Status: {status}")
-                for i, jenis in enumerate(jenis_uttp_inputs):
-                    if jenis:  # Hanya tampilkan jika ada isi
-                        st.write(f"Jenis UTTP {i+1}: {jenis}, Jumlah UTTP: {jumlah_unit_inputs[i]}")
-                
-                # Simpan data ke file CSV
+                st.success("Data berhasil disimpan!")
                 data = {
-                    'Tanggal': [tanggal],
-                    'Nama Perusahaan': [nama_perusahaan],
-                    'Alamat': [alamat],
-                    'Jenis Tera': [jenis_tera],
-                    'Kegiatan': [kegiatan],
-                    'Status': [status]
+                    "Tanggal": [tanggal],
+                    "Nama Perusahaan": [nama_perusahaan],
+                    "Alamat": [alamat],
+                    "Jenis Tera": [jenis_tera],
+                    "Kegiatan": [kegiatan],
+                    "Status": [status],
                 }
-                for i, jenis in enumerate(jenis_uttp_inputs):
-                    if jenis:
-                        data[f"Jenis UTTP {i+1}"] = [jenis]
-                        data[f"Jumlah UTTP {i+1}"] = [jumlah_unit_inputs[i]]
-                
                 df = pd.DataFrame(data)
-                try:
-                    if not os.path.exists(data_file_path):
-                        # Jika file tidak ditemukan, buat file baru dengan header
-                        with open(data_file_path, 'w') as f:
-                            f.write('Tanggal,Nama Perusahaan,Alamat,Jenis Tera,Kegiatan,Status\n')
-                    df.to_csv(data_file_path, mode='a', index=False, header=False)  # mode='a' untuk append
-                except Exception as e:
-                    st.error(f"Terjadi kesalahan saat menulis ke file CSV: {e}")
-
+                if not os.path.exists(data_file_path):
+                    df.to_csv(data_file_path, index=False)
+                else:
+                    df.to_csv(data_file_path, mode="a", index=False, header=False)
             else:
-                st.error("Harap isi semua kolom wajib (Nama Perusahaan dan Alamat)!")
+                st.error("Harap isi semua kolom wajib!")
 
 elif pilihan == "Lihat Data":
     st.subheader("Data Tera/Tera Ulang")
     if os.path.exists(data_file_path):
-        data = pd.read_csv(data_file_path)  # Load data
-        st.dataframe(data)  # Tampilkan data dalam bentuk DataFrame
+        data = pd.read_csv(data_file_path)
+        # Tampilkan tabel dengan CSS tambahan
+        st.markdown(
+            """
+            <style>
+            .dataframe table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            .dataframe th {
+                background-color: #f2f2f2;
+                text-align: center;
+                padding: 10px;
+            }
+            .dataframe td {
+                text-align: left;
+                padding: 8px;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.dataframe(data, use_container_width=True)
     else:
-        st.error("File data tidak ditemukan!")
+        st.error("Data belum tersedia!")
 
 elif pilihan == "Tentang":
     st.subheader("Tentang Aplikasi")
@@ -172,13 +149,3 @@ elif pilihan == "Tentang":
         """,
         unsafe_allow_html=True,
     )
-
-# Footer
-st.markdown(
-    """
-    <div style="text-align: center; margin-top: 50px; font-size: 14px;">
-    © 2024 UPTD Metrologi Legal. Hak cipta dilindungi undang-undang.
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
