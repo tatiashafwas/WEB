@@ -1,7 +1,7 @@
 import streamlit as st
-import pandas as pd
+import os
 import base64
-from datetime import datetime
+from datetime import date
 
 # Fungsi untuk mengonversi gambar ke Base64
 def get_image_base64(image_path):
@@ -18,12 +18,6 @@ logo_dinas_path = r"LOGO-METRO.png"
 # Cek keberadaan file logo dan konversi ke Base64
 logo_uptd_base64 = get_image_base64(logo_uptd_path)
 logo_dinas_base64 = get_image_base64(logo_dinas_path)
-
-# Inisialisasi session state untuk data
-if "data_tera" not in st.session_state:
-    st.session_state["data_tera"] = pd.DataFrame(columns=[
-        "Tanggal", "Nama Perusahaan", "Alamat", "Jenis UTTP", "Jumlah", "Jenis Tera", "Kegiatan", "Status"
-    ])
 
 # Menampilkan header jika logo ditemukan
 if logo_uptd_base64 and logo_dinas_base64:
@@ -86,21 +80,24 @@ pilihan = st.sidebar.selectbox("Pilih Menu", menu)
 if pilihan == "Tambah Data":
     st.subheader("Tambah Data Baru")
     with st.form("form_tambah_data"):
+        # Input untuk tanggal
+        tanggal = st.date_input("Tanggal", value=date.today())
+
         # Input untuk nama perusahaan dan alamat
         nama_perusahaan = st.text_input("Nama Perusahaan")
         alamat = st.text_input("Alamat")
 
         # Input untuk jumlah jenis UTTP
         st.markdown("### Jenis UTTP")
-        jumlah_jenis_uttp = st.number_input("Jumlah Jenis UTTP", min_value=1, max_value=50, value=1)
-        
+        jumlah_jenis_uttp = st.number_input("Jumlah Jenis UTTP", min_value=8, max_value=50, value=8)
+
         # Dinamis: Membuat input teks sesuai jumlah UTTP
         jenis_uttp_inputs = []
         jumlah_unit_inputs = []
         for i in range(1, int(jumlah_jenis_uttp) + 1):
             col1, col2 = st.columns([2, 1])
             with col1:
-                jenis_uttp = st.text_input(f"Jenis UTTP {i}")
+                jenis_uttp = st.text_input(f"Jenis UTTP {i}", placeholder="Opsional")
             with col2:
                 jumlah_unit = st.number_input(f"Jumlah UTTP {i}", min_value=0, value=0)
             jenis_uttp_inputs.append(jenis_uttp)
@@ -115,33 +112,21 @@ if pilihan == "Tambah Data":
         submit = st.form_submit_button("Simpan Data")
 
         if submit:
-            # Validasi untuk memastikan semua input diisi
-            if nama_perusahaan and alamat and all(jenis_uttp_inputs):
-                # Data baru yang akan ditambahkan
-                new_row = {
-                    "Tanggal": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "Nama Perusahaan": nama_perusahaan,
-                    "Alamat": alamat,
-                    "Jenis UTTP": "; ".join(jenis_uttp_inputs),
-                    "Jumlah": "; ".join(map(str, jumlah_unit_inputs)),
-                    "Jenis Tera": jenis_tera,
-                    "Kegiatan": kegiatan,
-                    "Status": status,
-                }
-
-                # Menambahkan data ke session_state
-                st.session_state["data_tera"] = pd.concat([
-                    st.session_state["data_tera"],
-                    pd.DataFrame([new_row])
-                ], ignore_index=True)
-
-                st.success("Data berhasil disimpan!")
+            # Validasi untuk memastikan semua input diisi kecuali UTTP opsional
+            if nama_perusahaan and alamat:
+                st.success(f"Data berhasil disimpan untuk tanggal {tanggal}!")
+                st.write(f"Nama Perusahaan: {nama_perusahaan}")
+                st.write(f"Alamat: {alamat}")
+                st.write(f"Jenis Tera: {jenis_tera}, Kegiatan: {kegiatan}, Status: {status}")
+                for i, jenis in enumerate(jenis_uttp_inputs):
+                    if jenis:  # Hanya tampilkan jika ada isi
+                        st.write(f"Jenis UTTP {i+1}: {jenis}, Jumlah UTTP: {jumlah_unit_inputs[i]}")
             else:
-                st.error("Harap isi semua kolom dengan lengkap!")
+                st.error("Harap isi semua kolom wajib (Nama Perusahaan dan Alamat)!")
 
 elif pilihan == "Lihat Data":
     st.subheader("Data Tera/Tera Ulang")
-    st.write(st.session_state["data_tera"])
+    st.write("Tampilkan data di sini.")
 
 elif pilihan == "Tentang":
     st.subheader("Tentang Aplikasi")
